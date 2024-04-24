@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                display: flex;
+            }
+            #array {
+                display: flex;
+                flex-direction: row;
+            }
+            .array_element {
+                display: flex;
+                height: 50px;
+                width: 50px;
+                /* margin: 50px; */
+                align-items: center;
+                justify-content: center;
+                border-color:yellow;
+                border-width: 10px;
+                border-radius: 10px;
+                background-color: black;
+                color: yellow;
+                position: absolute;
+                left: 200px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id = "array">
+        </div>
+        <script>
+            const TIME_DELTA = 10; // ms
+            const MOVE_SPEED = 0.5; // px per ms
+            function pxPosToInt(pxPos) {
+                return Number(pxPos.match(/([0-9]+)px/)[1]);
+            }
+            function intToPxPos(n) {
+                return n+"px";
+            }
+            async function stepElement(elem, start, end, endHookFn) {
+                moveSize = TIME_DELTA * MOVE_SPEED * Math.sign(end - start);
+                if (Math.abs(moveSize)>0) {
+                    start += moveSize;
+                    elem.style.left = intToPxPos(start);
+                    setTimeout(stepElement, TIME_DELTA, elem, start, end, endHookFn);
+                }
+                else if (endHookFn)
+                    endHookFn();
+            }
+            async function swapElements(a, b) {
+                let elemA = document.getElementById(a);
+                let elemB = document.getElementById(b);
+                aStart = pxPosToInt(elemA.style.left);
+                aEnd = pxPosToInt(elemB.style.left);
+                aStartY = pxPosToInt(elemA.style.top);
+                bStartY = pxPosToInt(elemB.style.top);
+                elemA.style.top = intToPxPos(aStartY + 50);
+                elemB.style.top = intToPxPos(bStartY + 100);
+                setTimeout(stepElement, TIME_DELTA, elemA, aStart, aEnd, ()=>{elemA.style.top = intToPxPos(aStartY)});
+                setTimeout(stepElement, TIME_DELTA, elemB, aEnd, aStart, ()=>{elemB.style.top = intToPxPos(bStartY)});
+            }
+            let thing = document.getElementById("thing");
+            let arrayDiv = document.getElementById("array");
+            for (let i=0; i<10; i++) {
+                let elemDiv = document.createElement("div");
+                elemDiv.id = `elem${i}`;
+                elemDiv.innerText = i;
+                elemDiv.style.left = i*50+"px";
+                elemDiv.style.top = "50px";
+                elemDiv.setAttribute("class","array_element");
+                arrayDiv.appendChild(elemDiv);
+            }
+            swapElements("elem1","elem9",1000).then(
+            swapElements("elem6","elem2",1000));
+            // swapElements("elem5","elem4",1000);
+            // swapElements("elem2","elem3",1000);
+            // swapElements("elem1","elem9",1000);
+        </script>
+    </body>
+</html>
