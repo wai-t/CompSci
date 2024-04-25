@@ -4,10 +4,16 @@
         <style>
             body {
                 display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 1000px;
             }
             #array {
                 display: flex;
                 flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                background-color: blue;
             }
             .array_element {
                 display: flex;
@@ -16,27 +22,75 @@
                 /* margin: 50px; */
                 align-items: center;
                 justify-content: center;
-                border-color:yellow;
-                border-width: 10px;
+                /* border-color:yellow;
+                border-style: solid;
+                border-width: 2px; */
                 border-radius: 10px;
                 background-color: black;
                 color: yellow;
-                position: absolute;
-                left: 200px;
+                position: fixed;
+            }
+            .pointer {
+                position: fixed;
+                width: 50px;
+                height: 50px;
             }
         </style>
     </head>
     <body>
-        <div id = "array">
+        <div id = "algorithm">
+            <h1>Sorting algorithm</h1>
+            <div id = "array">
+            </div>
         </div>
         <script>
             const TIME_DELTA = 10; // ms
             const MOVE_SPEED = 0.5; // px per ms
+            const TILE_SIZE = 50; // px
+
+            let datastore = []; // data to be sorted
+            let datastore_size = 10;
+
+            function populateDatastore(size) {
+                while(size > 0) {
+//                    datastore.push(Math.floor(Math.random()*100));
+                    datastore.push(datastore.length+1);
+                    size--;
+                }
+            }
+
+            function elemId(i) {return `elem${i}`;}
+
             function pxPosToInt(pxPos) {
                 return Number(pxPos.match(/([0-9]+)px/)[1]);
             }
             function intToPxPos(n) {
                 return n+"px";
+            }
+
+            function displayData() {
+                let arrayDiv = document.getElementById("array");
+                arrayDiv.innerHTML="";
+                for (let i=0; i<datastore.length; i++) {
+                    let elemDiv = document.createElement("div");
+                    elemDiv.id = elemId(i);
+                    elemDiv.innerText = datastore[i];
+                    elemDiv.style.left = i*TILE_SIZE+"px";
+                    elemDiv.style.top = intToPxPos(TILE_SIZE * 3);
+                    elemDiv.setAttribute("class","array_element");
+                    arrayDiv.appendChild(elemDiv);
+                }
+            }
+
+            function displayPointer(pointerUri, row, col) {
+                let algorithmDiv = document.getElementById("algorithm");
+                let pointerEle = document.createElement("img");
+                pointerEle.src = pointerUri;
+                pointerEle.setAttribute("class","pointer");
+                pointerEle.style.left = intToPxPos(col*TILE_SIZE);
+                pointerEle.style.top = intToPxPos(row*TILE_SIZE);
+                algorithmDiv.appendChild(pointerEle);
+                return pointerEle;
             }
             async function stepElement(elem, start, end, endHookFn) {
                 moveSize = TIME_DELTA * MOVE_SPEED * Math.sign(end - start);
@@ -57,25 +111,30 @@
                 bStartY = pxPosToInt(elemB.style.top);
                 elemA.style.top = intToPxPos(aStartY + 50);
                 elemB.style.top = intToPxPos(bStartY + 100);
-                setTimeout(stepElement, TIME_DELTA, elemA, aStart, aEnd, ()=>{elemA.style.top = intToPxPos(aStartY)});
-                setTimeout(stepElement, TIME_DELTA, elemB, aEnd, aStart, ()=>{elemB.style.top = intToPxPos(bStartY)});
+                let aPromise = new Promise(resolve => {
+                    setTimeout(stepElement, TIME_DELTA, elemA, aStart, aEnd, ()=>{elemA.style.top = intToPxPos(aStartY); resolve()});
+                });
+                let bPromise = new Promise(resolve => {
+                    setTimeout(stepElement, TIME_DELTA, elemB, aEnd, aStart, ()=>{elemB.style.top = intToPxPos(bStartY); resolve()});
+                });
+                return Promise.all([aPromise, bPromise]);//.then(resolve => {console.log("swapped")});
             }
-            let thing = document.getElementById("thing");
-            let arrayDiv = document.getElementById("array");
-            for (let i=0; i<10; i++) {
-                let elemDiv = document.createElement("div");
-                elemDiv.id = `elem${i}`;
-                elemDiv.innerText = i;
-                elemDiv.style.left = i*50+"px";
-                elemDiv.style.top = "50px";
-                elemDiv.setAttribute("class","array_element");
-                arrayDiv.appendChild(elemDiv);
-            }
-            swapElements("elem1","elem9",1000).then(
-            swapElements("elem6","elem2",1000));
-            // swapElements("elem5","elem4",1000);
-            // swapElements("elem2","elem3",1000);
-            // swapElements("elem1","elem9",1000);
+            populateDatastore(datastore_size);
+            displayData();
+            let pointerJ = displayPointer("pointer_j.png",4,1);
+            let pointerI = displayPointer("pointer_i.png",2,0);
+            let animationBuffer = [];
+            animationBuffer.push(()=>{return swapElements("elem1","elem9",1000)});
+            animationBuffer.push(()=>{return swapElements("elem6","elem2",1000)});
+            animationBuffer.push(()=>{return swapElements("elem3","elem7",1000)});
+
+            let p = new Promise(resolve => {resolve()})
+
+            p = p    .then(()=>animationBuffer[0]())
+            p = p     .then(()=>animationBuffer[1]())
+            p = p     .then(()=>animationBuffer[2]());
+            stepElement(pointerI,10*TILE_SIZE, 5*TILE_SIZE);
+
         </script>
     </body>
 </html>
