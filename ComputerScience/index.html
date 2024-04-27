@@ -3,17 +3,21 @@
     <head>
         <style>
             body {
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                width: auto;
+            }
+            #algorithm {
                 width: 1000px;
+                left: 300px;
             }
             #array {
-                display: flex;
-                flex-direction: row;
+                /* display: flex;
+                flex-direction: row; */
+                width: 1000px;
+                height: 250px;
                 justify-content: center;
                 align-items: center;
                 background-color: blue;
+                position: relative;
             }
             .array_element {
                 display: flex;
@@ -28,35 +32,54 @@
                 border-radius: 10px;
                 background-color: black;
                 color: yellow;
-                position: fixed;
+                position: absolute;
             }
             .pointer {
-                position: fixed;
+                display: flex;
+                position: absolute;
                 width: 50px;
                 height: 50px;
+                align-items: center;
+                justify-content: center;
             }
         </style>
     </head>
     <body>
         <div id = "algorithm">
-            <h1>Sorting algorithm</h1>
+            <h1 id = "title">Sorting algorithm</h1>
             <div id = "array">
+            </div>
+            <p id = "commentary">What's happening?</p>
+            <div>
+                <button onclick="reset()">Reset</button>
+                <button onclick="sort()">Sort</button>
+                <button onclick="animating = false;">cancel</button>
             </div>
         </div>
         <script>
             const TIME_DELTA = 10; // ms
-            const MOVE_SPEED = 0.5; // px per ms
+            const MOVE_SPEED = 0.25; // px per ms
             const TILE_SIZE = 50; // px
 
+            let sourcedata = [];
+
             let datastore = []; // data to be sorted
+            let elemIds = [];
             let datastore_size = 10;
 
-            function populateDatastore(size) {
+            let animationBuffer = [];
+
+            function generateSourceData(size) {
+                sourcedata = [];
                 while(size > 0) {
-//                    datastore.push(Math.floor(Math.random()*100));
-                    datastore.push(datastore.length+1);
+                    sourcedata.push(Math.floor(Math.random()*100));
+// for debugging                    sourcedata.push((sourcedata.length+1*13)%5);
                     size--;
                 }
+            }
+            function populateDatastore(size) {
+                datastore = [...sourcedata];
+                elemIds = datastore.map((_,k) => elemId(k));
             }
 
             function elemId(i) {return `elem${i}`;}
@@ -64,6 +87,7 @@
             function pxPosToInt(pxPos) {
                 return Number(pxPos.match(/([0-9]+)px/)[1]);
             }
+
             function intToPxPos(n) {
                 return n+"px";
             }
@@ -75,15 +99,15 @@
                     let elemDiv = document.createElement("div");
                     elemDiv.id = elemId(i);
                     elemDiv.innerText = datastore[i];
-                    elemDiv.style.left = i*TILE_SIZE+"px";
-                    elemDiv.style.top = intToPxPos(TILE_SIZE * 3);
+                    elemDiv.style.left = intToPxPos(i*TILE_SIZE);
+                    elemDiv.style.top = intToPxPos(3*TILE_SIZE);
                     elemDiv.setAttribute("class","array_element");
                     arrayDiv.appendChild(elemDiv);
                 }
             }
 
             function displayPointer(pointerUri, row, col) {
-                let algorithmDiv = document.getElementById("algorithm");
+                let algorithmDiv = document.getElementById("array");
                 let pointerEle = document.createElement("img");
                 pointerEle.src = pointerUri;
                 pointerEle.setAttribute("class","pointer");
@@ -92,7 +116,8 @@
                 algorithmDiv.appendChild(pointerEle);
                 return pointerEle;
             }
-            async function stepElement(elem, start, end, endHookFn) {
+
+            function stepElement(elem, start, end, endHookFn) {
                 moveSize = TIME_DELTA * MOVE_SPEED * Math.sign(end - start);
                 if (Math.abs(moveSize)>0) {
                     start += moveSize;
@@ -100,8 +125,29 @@
                     setTimeout(stepElement, TIME_DELTA, elem, start, end, endHookFn);
                 }
                 else if (endHookFn)
-                    endHookFn();
+                    setTimeout(endHookFn, TIME_DELTA*10);
             }
+
+            function elementPath(elem, path, endHookFn) {
+                if (path.length>1) {
+                    moveSizeX = Math.min(TIME_DELTA * MOVE_SPEED, Math.abs(path[1][0] - path[0][0])) * Math.sign(path[1][0] - path[0][0]);
+                    moveSizeY = Math.min(TIME_DELTA * MOVE_SPEED, Math.abs(path[1][1] - path[0][1])) * Math.sign(path[1][1] - path[0][1]);
+                    if (Math.abs(moveSizeX)>0 || Math.abs(moveSizeY) > 0) {
+                        path[0][0] += moveSizeX;
+                        path[0][1] += moveSizeY;
+                        elem.style.left = intToPxPos(path[0][0]);
+                        elem.style.top = intToPxPos(path[0][1]);
+                        setTimeout(elementPath, TIME_DELTA, elem, [...path], endHookFn);
+                    }
+                    else {
+                        path.shift();
+                        setTimeout(elementPath, TIME_DELTA, elem, [...path], endHookFn);
+                    }
+                }
+                else if (endHookFn)
+                    setTimeout(endHookFn, TIME_DELTA*10);
+            }
+
             async function swapElements(a, b) {
                 let elemA = document.getElementById(a);
                 let elemB = document.getElementById(b);
@@ -109,31 +155,91 @@
                 aEnd = pxPosToInt(elemB.style.left);
                 aStartY = pxPosToInt(elemA.style.top);
                 bStartY = pxPosToInt(elemB.style.top);
-                elemA.style.top = intToPxPos(aStartY + 50);
-                elemB.style.top = intToPxPos(bStartY + 100);
+                let pathA = [[aStart, aStartY], [aStart,(aStartY - 50)], [aEnd, (aStartY - 50)], [aEnd, aStartY]]
+                let pathB = [[aEnd, bStartY], [aEnd,(bStartY + 50)], [aStart, (bStartY + 50)], [aStart, aStartY]]
                 let aPromise = new Promise(resolve => {
-                    setTimeout(stepElement, TIME_DELTA, elemA, aStart, aEnd, ()=>{elemA.style.top = intToPxPos(aStartY); resolve()});
+                    setTimeout(elementPath, TIME_DELTA, elemA, pathA, resolve);
                 });
                 let bPromise = new Promise(resolve => {
-                    setTimeout(stepElement, TIME_DELTA, elemB, aEnd, aStart, ()=>{elemB.style.top = intToPxPos(bStartY); resolve()});
+                    setTimeout(elementPath, TIME_DELTA, elemB, pathB, resolve);
                 });
-                return Promise.all([aPromise, bPromise]);//.then(resolve => {console.log("swapped")});
+                return Promise.all([aPromise, bPromise]);
             }
-            populateDatastore(datastore_size);
-            displayData();
-            let pointerJ = displayPointer("pointer_j.png",4,1);
-            let pointerI = displayPointer("pointer_i.png",2,0);
-            let animationBuffer = [];
-            animationBuffer.push(()=>{return swapElements("elem1","elem9",1000)});
-            animationBuffer.push(()=>{return swapElements("elem6","elem2",1000)});
-            animationBuffer.push(()=>{return swapElements("elem3","elem7",1000)});
 
-            let p = new Promise(resolve => {resolve()})
+            async function translateElement(element, path) {
+                return new Promise(resolve => {
+                    setTimeout(elementPath, TIME_DELTA, element, path, resolve);
+                })
+            }
 
-            p = p    .then(()=>animationBuffer[0]())
-            p = p     .then(()=>animationBuffer[1]())
-            p = p     .then(()=>animationBuffer[2]());
-            stepElement(pointerI,10*TILE_SIZE, 5*TILE_SIZE);
+            function showCommentary(whatsHappening) {
+                let commentaryDiv = document.getElementById("commentary");
+                commentaryDiv.innerText = whatsHappening;
+            }
+
+            function doSwap(i,j) {
+                let xi = datastore[i];
+                let xj = datastore[j];
+                animationBuffer.push(()=>{showCommentary(`${xi} > ${xj} swapping`)});
+                let tmp = datastore[i];
+                datastore[i] = datastore[j];
+                datastore[j] = tmp;
+                tmp = elemIds[i];
+                elemIds[i] = elemIds[j];
+                elemIds[j] = tmp;
+                let ei = elemIds[i];
+                let ej = elemIds[j];
+                animationBuffer.push(() => {return swapElements(ei,ej)});
+            }
+
+            function animatePointer(pointerElem, x, row) {
+                animationBuffer.push(() => {return translateElement(pointerElem,[[(x-1)*TILE_SIZE, row*TILE_SIZE],[x*TILE_SIZE,row*TILE_SIZE]])});
+            }
+
+            let animating = false;
+            function playAnimation() {
+                animating = true;
+                let p = new Promise(r=>{r()});
+                for (let a of animationBuffer) {
+                    p = p.then(()=> {return animating ? a() : undefined});
+                }
+                p.then(()=>{animating=false;});
+            }
+
+            function reset() {
+                animating = false;
+                animationBuffer = [];
+                generateSourceData(datastore_size);
+                populateDatastore();
+                displayData();
+            }
+
+            function sort() {
+                animating = false;
+                animationBuffer = [];
+                populateDatastore();
+                displayData();
+
+                let pointerJ = displayPointer("pointer_j.png",4,0);
+                let pointerI = displayPointer("pointer_i.png",2,0);
+
+                showCommentary("Selection sort");
+
+                for (i = 0; i<datastore.length-1; animatePointer(pointerI, i, 2), i++) {
+
+                    for (j = i+1; j<datastore.length; j++) {
+                        animatePointer(pointerJ, j, 4);
+
+                        if (datastore[i]>datastore[j]) {
+                            doSwap(i,j);
+                        }
+                    }
+                }
+
+                playAnimation();
+            }
+
+            reset();
 
         </script>
     </body>
