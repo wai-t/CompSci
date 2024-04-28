@@ -53,7 +53,7 @@
             <div>
                 <button onclick="reset()">Reset</button>
                 <button onclick="sort()">Sort</button>
-                <button onclick="animating = false;">cancel</button>
+                <button onclick="cancelAnimation()">cancel</button>
             </div>
         </div>
         <script>
@@ -148,7 +148,7 @@
                     setTimeout(endHookFn, TIME_DELTA*10);
             }
 
-            async function swapElements(a, b) {
+            function swapElements(a, b) {
                 let elemA = document.getElementById(a);
                 let elemB = document.getElementById(b);
                 aStart = pxPosToInt(elemA.style.left);
@@ -166,7 +166,7 @@
                 return Promise.all([aPromise, bPromise]);
             }
 
-            async function translateElement(element, path) {
+            function translateElement(element, path) {
                 return new Promise(resolve => {
                     setTimeout(elementPath, TIME_DELTA, element, path, resolve);
                 })
@@ -196,26 +196,55 @@
                 animationBuffer.push(() => {return translateElement(pointerElem,[[(x-1)*TILE_SIZE, row*TILE_SIZE],[x*TILE_SIZE,row*TILE_SIZE]])});
             }
 
-            let animating = false;
+            async function cancelAnimation() {
+                if (animationState == "running") {
+                    console.log("cancelling");
+                    animationState = "cancelling";
+                    let t=0;
+                    return new Promise(
+                        (resolve, reject) => {
+                            let timer = setInterval(() => {
+                                t = t + 1;
+                                console.log("waiting for cancel")
+                                if (animationState == "stopped")
+                                    resolve();
+                                else if 
+                                    (t>2) reject();
+                                else
+                                    return;
+                                clearInterval(timer);
+                            }, 1000, resolve);
+                        }
+                    );
+                }
+            }
+            let animationState = "stopped";
             function playAnimation() {
-                animating = true;
+                animationState = "running";
                 let p = new Promise(r=>{r()});
                 for (let a of animationBuffer) {
-                    p = p.then(()=> {return animating ? a() : undefined});
+                    p = p.then(() => {
+                        if (animationState!="running")
+                            throw new Error("Cancelled");
+                        return a()
+                    });
                 }
-                p.then(()=>{animating=false;});
+                p = p.catch((reason) => {console.log(`error ${reason}`)});
+                p = p.finally(()=>{animationState = "stopped";})
             }
 
-            function reset() {
-                animating = false;
+            async function reset() {
+                await cancelAnimation();
                 animationBuffer = [];
                 generateSourceData(datastore_size);
                 populateDatastore();
                 displayData();
             }
 
-            function sort() {
-                animating = false;
+            async function sort() {
+                console.log("waiting to cancel current");
+                await cancelAnimation();
+                console.log("starting sort");
                 animationBuffer = [];
                 populateDatastore();
                 displayData();
@@ -225,8 +254,8 @@
 
                 showCommentary("Selection sort");
 
-                for (i = 0; i<datastore.length-1; animatePointer(pointerI, i, 2), i++) {
-
+                for (i = 0; i<datastore.length-1; i++) {
+                    animatePointer(pointerI, i, 2);
                     for (j = i+1; j<datastore.length; j++) {
                         animatePointer(pointerJ, j, 4);
 
