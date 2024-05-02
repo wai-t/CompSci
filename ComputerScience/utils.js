@@ -138,6 +138,39 @@ function doSwap(i,j) {
     animationBuffer.push(() => {return swapElements(ei,ej)});
 }
 
+function doRotate(i,j, dir=1) {
+    if (i===j)
+        return;
+    [i,j] = [Math.min(i,j,), Math.max(i,j)];
+    if (dir>0) {
+        let top = pxPosToInt(document.getElementById(elemIds[i]).style.top);
+        let destX = i * TILE_SIZE;
+        let elem = document.getElementById(elemIds[j]);
+        let path = [[j * TILE_SIZE, top],
+                    [j * TILE_SIZE, (top - TILE_SIZE)]];
+        animationBuffer.push(()=>{return translateElement(elem, [...path]);});
+        let ii = i;
+        let jj = j;
+        for (;ii<jj;jj--) {
+            let elem = document.getElementById(elemIds[jj-1]);
+            let path = [[((jj-1) * TILE_SIZE), top],[( jj * TILE_SIZE ), top]];
+            animationBuffer.push(()=>{return translateElement(elem, path);});
+        }
+        let path2 = [[j * TILE_SIZE, (top - TILE_SIZE)],
+                [destX, (top - TILE_SIZE)],
+                [destX, top]];
+        animationBuffer.push(()=>{return translateElement(elem, path2);});
+        let tempd = datastore[j];
+        let tempe = elemIds[j];
+        for (;i<j;j--) {
+            datastore[j] = datastore[j-1];
+            elemIds[j] = elemIds[j-1];
+        }
+        datastore[i] = tempd;
+        elemIds[i] = tempe;
+    }
+}
+
 function animatePointer(pointerElem, x, row) {
     animationBuffer.push(() => {return translateElement(pointerElem,[[(x-1)*TILE_SIZE, row*TILE_SIZE],[x*TILE_SIZE,row*TILE_SIZE]])});
 }
