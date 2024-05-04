@@ -34,6 +34,50 @@
                 color: yellow;
                 position: absolute;
             }
+            .range_element {
+                display: flex;
+                height: 20px;
+                width: 50px;
+                top: 130px;
+                /* margin: 50px; */
+                align-items: center;
+                justify-content: center;
+                border-color:black;
+                border-style: solid;
+                border-width: 2px;
+                /* border-radius: 10px; */
+                background-color: black;
+                color: grey;
+                position: absolute;
+            }
+            .range_element.sorted {
+                background-color: green;
+                color: blue;
+            }
+            .range_element.left {
+                background-color: red;
+                color: blue;
+            }
+            .range_element.right {
+                background-color: lightblue;
+                color: blue;
+            }
+            .pivot_element {
+                display: flex;
+                height: 50px;
+                width: 50px;
+                /* margin: 50px; */
+                align-items: center;
+                justify-content: center;
+                /* border-color:yellow;
+                border-style: solid;
+                border-width: 2px; */
+                border-radius: 10px;
+                background-color: lightblue;
+                color: black;
+                position: absolute;
+            }
+
             .pointer {
                 display: flex;
                 position: absolute;
@@ -54,17 +98,28 @@
             </div>
             <p id = "commentary">What's happening?</p>
             <div>
+                <button onClick="randomise()">Randomise</button>
                 <button onclick="reset()">Reset</button>
                 <button onclick="selectionSort()">Selection Sort</button>
+                <button onclick="insertionSort()">Insertion Sort</button>
+                <button onclick="bubbleSort()">Bubble Sort</button>
+                <button onclick="quickSortLaunch()">Quick Sort</button>
+                <button onclick="mergeSortLaunch()">Merge Sort</button>
                 <button onclick="cancelAnimation()">cancel</button>
             </div>
         </div>
         <script>
+            /**
+             * Assert sorted
+             * */
+            function checkSorted() {
+                for (let i = 0; i<datastore.length-1; i++) {
+                    if (datastore[i]>datastore[i+1])
+                        throw Error("result not sorted!");
+                }
+            }
             async function selectionSort() {
-                await cancelAnimation();
-                animationBuffer = [];
-                populateDatastore();
-                displayData();
+                await prepareSort();
 
                 let pointerJ = displayPointer("pointer_j.png",4,0);
                 let pointerI = displayPointer("pointer_i.png",2,0);
@@ -73,13 +128,12 @@
                 showCommentary("Selection sort");
 
                 for (i = 0; i<datastore.length-1; i++) {
-                    animatePointer(pointerI, i, 2);
+                    animatePointer(pointerI, Math.max(i-1,0), i, 2);
                     for (j = i+1; j<datastore.length; j++) {
-                        animatePointer(pointerJ, j, 4);
+                        animatePointer(pointerJ, j-1, j, 4);
 
                         if (datastore[i]>datastore[j]) {
                             doSwap(i,j);
-                            // doRotate(i,j);
                         }
                     }
                 }
@@ -87,7 +141,178 @@
                 playAnimation();
             }
 
-            reset();
+            async function insertionSort() {
+                await prepareSort();
+
+                let pointerJ = displayPointer("pointer_j.png",4,0);
+                let pointerI = displayPointer("pointer_i.png",2,0);
+
+                showAlgorithmName("Insertion sort");
+                showCommentary("Insertion sort");
+
+                for (i = 1; i<datastore.length; i++) {
+                    animatePointer(pointerI, i-1, i, 2);
+                    for (j = 0; j<i; j++) {
+                        animatePointer(pointerJ, Math.max(0,j-1), j, 4);
+
+                        if (datastore[i]<datastore[j]) {
+                            let target = datastore[i];
+                            animationBuffer.push(()=>showCommentary(`Inserting ${target} at position J`));
+                            // doSwap(i,j);
+                            doRotate(j,i);
+                            break;
+                        }
+                    }
+                }
+
+                playAnimation();
+            }
+
+            async function bubbleSort() {
+
+                await prepareSort();
+
+                let pointerJ = displayPointer("pointer_j.png",4,0);
+                let pointerI = displayPointer("pointer_i.png",2,0);
+
+                showAlgorithmName("Bubble sort");
+                showCommentary("Bubble sort");
+
+                for (let i = datastore.length-1; i>0; i--) {
+                    animatePointer(pointerI, i+1, i, 2);
+                    for (let j = 0; j<i; j++) {
+                        animatePointer(pointerJ, Math.max(j-1,0), j, 4);
+                        if (datastore[j]>datastore[j+1]) {
+                            let left = datastore[j];
+                            let right = datastore[j+1];
+                            animationBuffer.push(()=>showCommentary(`${left}>${right}, so swapping`));
+                            doSwap(j,j+1);
+                        }
+                    }
+                }
+
+                playAnimation();
+            }
+
+            async function quickSortLaunch() {
+                await prepareSort();
+
+                pivotNo = 0;
+                showAlgorithmName("Quick sort");
+                
+                quickSort(0, datastore.length);
+                
+                playAnimation();
+            }
+            async function quickSort(start, length) {
+                if (length==1) {
+                    let pivot = pivotElement(start);
+                    animationBuffer.push(()=>placePivotElement(pivot, start))
+                    let pNo = pivotNo;
+                    animationBuffer.push(() => showCommentary(`pivot fixed at P${pNo}`));
+                    return;
+                }
+                // if (length==2) {
+                //     animationBuffer.push(()=>placePivotElement(null, start + 1));
+                //     if (datastore[start] >datastore[start + 1]) {
+                //         // let tmp = datastore[start];
+                //         // datastore[start] = datastore[currentPivot];
+                //         // datastore[currentPivot] = tmp;
+                //         doRotate(start + 1, start);
+                //     }
+                //     animationBuffer.push(()=>placePivotElement(null, start));
+                //     return;
+                // }
+                let currentPivot = start + length - 1;
+                let pivot = pivotElement(currentPivot);
+                // animationBuffer.push(() => placePivotElement(pivot, currentPivot));
+                {
+                    let p = currentPivot;
+                    animationBuffer.push(() => placePivotElement(pivot, p));
+                }
+                for (let i = start; i<currentPivot; i++) {
+                    if (datastore[i] > datastore[currentPivot]) {
+                        // let tmp = datastore[i];
+                        // for (let j = i; j<currentPivot; j++) {
+                        //     datastore[j] = datastore[j+1];
+                        // }
+                        // datastore[currentPivot] = tmp;
+                        {
+                            let target = datastore[i];
+                            let testValue = datastore[currentPivot];
+                            let pNo = pivotNo;
+                            animationBuffer.push(() => showCommentary(`Moving ${target} to right of ${testValue} at pivot ${pNo}`));
+                            let p = currentPivot-1;
+                            animationBuffer.push(() => placePivotElement(pivot, p));
+                        }
+                        doRotate(currentPivot, i);
+                        i--;
+                        currentPivot--;
+                        // animationBuffer.push(() => placePivotElement(pivot, currentPivot));
+
+                    }
+                }
+                if (currentPivot>start) quickSort(start,currentPivot - start);
+                if (currentPivot<start + length-1) quickSort(currentPivot+1, start + length -1 - currentPivot);
+            }
+
+            async function mergeSortLaunch() {
+                await prepareSort();
+
+                showAlgorithmName("Merge Sort");
+                mergeSort(0, datastore.length);
+                
+                playAnimation();
+            }
+            async function mergeSort(start, length) {
+                if (length<=1)
+                    return;
+                else if (length==2) {
+                    animationBuffer.push(()=>showCommentary(`sorting range ${start} to ${start + length}`));
+                    animationBuffer.push(()=>showMergeRange(start, 0, 1, 2));
+                    if (datastore[start]>datastore[start+1]) {
+                        // let tmp = datastore[start];
+                        // datastore[start] = datastore[start+1];
+                        // datastore[start+1] = tmp;
+                        doRotate(start+1, start);
+                    }
+                    return;
+                }
+                let depth = 0;
+                let l = length-1;
+                while (l>0) {
+                    depth++;
+                    l>>=1;
+                }
+                let divider = 2**(depth-1);
+
+                mergeSort(start, divider);
+                mergeSort(start + divider, length-divider);
+                animationBuffer.push(()=>showCommentary(`sorting range: ${start} to ${start + length}`));
+                let i = start;
+                let j = start + divider;
+                // console.log(`segment ${i},${j},${start + length} `)
+                animationBuffer.push(()=>showMergeRange(start, 0, divider, length));
+                while (i<j && j<start + length) {
+                    if (datastore[i]>datastore[j]) {
+                        // let tmp = datastore[j];
+                        // for (let k=j; k>i; k--) {
+                        //     datastore[k] = datastore[k-1];
+                        // }
+                        // datastore[i] = tmp;
+                        doRotate(i,j);
+                        j++;
+                    }
+                    i++;
+                    {
+                        let sorted = i - start;
+                        let divider = j - start;
+                        animationBuffer.push(()=>showMergeRange(start,sorted, divider, length));
+                    }
+                }
+                animationBuffer.push(()=>showMergeRange(start, length, length, length));
+            }
+     reset();
 
         </script>
     </body>
