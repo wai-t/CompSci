@@ -41,7 +41,7 @@ function displayData() {
         elemDiv.id = elemId(i);
         elemDiv.innerText = datastore[i];
         elemDiv.style.left = intToPxPos(i*TILE_SIZE);
-        elemDiv.style.top = intToPxPos(3*TILE_SIZE);
+        elemDiv.style.top = intToPxPos(TILE_SIZE);
         elemDiv.setAttribute("class","array_element");
         arrayDiv.appendChild(elemDiv);
     }
@@ -167,7 +167,7 @@ function pivotElement(currentPivot) {
     pivotElement.setAttribute("class", "pivot_element");
     let arrayDiv = document.getElementById("array");
     pivotElement.textContent = `P${pivotNo}`;
-    pivotElement.style.top = "100px"
+    pivotElement.style.top = "0px"
     pivotElement.style.left = intToPxPos (currentPivot * TILE_SIZE)
     pivotElement.style.visibility = "hidden";
     arrayDiv.appendChild(pivotElement);

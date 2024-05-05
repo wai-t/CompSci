@@ -4,16 +4,28 @@
         <style>
             body {
                 width: auto;
+                font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+            }
+            .algorithm_summary {
+                padding: 10px;
+                margin: 10px;
+                background-color: lightgray;
+                width: auto;
             }
             #algorithm {
-                width: 1000px;
+                width: auto;
                 left: 300px;
+                top: 0px;
+                position: sticky;
+                background-color: white;
+                padding-bottom: 50px;
             }
             #array {
                 /* display: flex;
                 flex-direction: row; */
-                width: 1000px;
-                height: 250px;
+                width: auto;
+                min-width: 500px;
+                height: 150px;
                 justify-content: center;
                 align-items: center;
                 background-color: blue;
@@ -38,7 +50,7 @@
                 display: flex;
                 height: 20px;
                 width: 50px;
-                top: 130px;
+                top: 30px;
                 /* margin: 50px; */
                 align-items: center;
                 justify-content: center;
@@ -55,11 +67,11 @@
                 color: blue;
             }
             .range_element.left {
-                background-color: red;
+                background-color: orange;
                 color: blue;
             }
             .range_element.right {
-                background-color: lightblue;
+                background-color: mediumslateblue;
                 color: blue;
             }
             .pivot_element {
@@ -94,19 +106,118 @@
         <div id = "algorithm">
             <h1 id = "title">Sorting algorithm</h1>
             <h2 id = "algorithm_name"></h2>
-            <div id = "array">
+            <div style="padding: 50px; background-color: blue;">
+                <div id = "array">
+                </div>
             </div>
             <p id = "commentary">What's happening?</p>
             <div>
                 <button onClick="randomise()">Randomise</button>
                 <button onclick="reset()">Reset</button>
-                <button onclick="selectionSort()">Selection Sort</button>
-                <button onclick="insertionSort()">Insertion Sort</button>
-                <button onclick="bubbleSort()">Bubble Sort</button>
-                <button onclick="quickSortLaunch()">Quick Sort</button>
-                <button onclick="mergeSortLaunch()">Merge Sort</button>
                 <button onclick="cancelAnimation()">cancel</button>
             </div>
+
+        </div>
+        <div>
+            <div class="algorithm_summary">
+                <h4>Selection Sort</h4>
+                <p>
+                    Index <strong>I</strong> loops over all array elements. For each position <strong>I</strong>, 
+                    the element's value is compared with every element to the right of it by looping index <strong>J</strong> from 
+                    <strong>I+1</strong> to the end. If any pair of elements are in the wrong order, they are swapped. This way, 
+                    after each loop over <strong>J</strong>, the lowest of the remaining array elements ends up at position <strong>I</strong>.
+                    A strong feature of this algorithm is that at any intermediate time before the sort is complete, the values to the 
+                    left of <strong>I</strong> are already sorted and are guaranteed to be the lowest in the array.
+                </p>
+                <button onclick="selectionSort()">Run Selection Sort</button>
+            </div>
+            <div class="algorithm_summary">
+                <h4>Insertion Sort</h4>
+                <p>
+                    Index <strong>I</strong> loops over all array elements. For each element, it works out where to
+                    insert it into the sub-array of elements to the left of it. To do this, Index <strong>J</strong> loops over
+                    the sub-array until it finds an element that is larger than the element at <strong>I</strong>. If it finds
+                    such a position, it is inserted at that position (causing the elements after it to be
+                    shifted one to the right until the position occupied by <strong>I</strong> is filled - this is called a "rotation").
+                    At any intermediate time before the sort is complete, the values to the left of <strong>I</strong>> are sorted, 
+                    but crucially they may not be the lowest in the whole array.
+                </p>
+                <button onclick="insertionSort()">Run Insertion Sort</button>
+            </div>
+            <div class="algorithm_summary">
+                <h4>Bubble Sort</h4>
+                <p>
+                    The index <strong>I</strong> is initialised to the end of the unsorted part of the array. 
+                    Index <strong>J</strong> iterates over the unsorted part of the array. At each position, the consecutive pair of elements
+                    at <strong>J</strong> and <strong>J+1</strong> are compared, and if they are in the wrong order, they are swapped. 
+                    The highest value in the range therefore moves to the end of the unsorted part of the array like a "bubble" rising.
+                    The next loop over <strong>J</strong> only needs to iterate over one less array element, since the last is now in it's
+                    correct place, so <strong>I</strong> is decremented by 1.
+                    At any intermediate time before the array is completely sorted,
+                    the values to the right of <strong>I</strong> are sorted and are guaranteed to be the highest in
+                    the whole array.
+                </p>
+                <button onclick="bubbleSort()">Run Bubble Sort</button>
+            </div>
+            <div class="algorithm_summary">
+                <h4>Quick Sort</h4>
+                <p>
+                    This is a "divide and conquer" algorithm, and this implementation uses recursive
+                    function calls. Starting with the whole array, an element (traditionally the last one,
+                    but doesn't need to be) is chosen to be the "pivot", and all other elements with a higher value are placed
+                    to the right of it, making room for it by shifting the pivot (and all elements in between them) one place to the left - this is called a "rotation".
+                    So a single recursion of the algorithm results in a range of elements which contains 
+                    [<i>...elements <= pivot,  pivot,  ...elements > pivot</i>].
+                    At this point, the pivot becomes fixed in place because it has found it's correct place in the sort order.
+                    Recursively, the same algorithm is then applied to the sub-array to the left
+                    of the pivot (if it contains two or more elements) and the sub-array to the right of the pivot (if it contains two or more elements).
+                    If there is only one element in a sub-array it doesn't need sorting and it is trivially marked as a fixed pivot.
+                    In the animation, each pivot is labelled in sequence as <strong>P1, P2,...Pn</strong> where <strong>P1</strong> is the first pivot fixed at
+                    the top of the recursion, and <strong>P2</strong> (and potentially <strong>P3</strong>) are the pivot(s) fixed at the second level
+                    of recursion.
+                    Notice that in this implementation, the processing at each level of recursion is performed <strong>before</strong> it calls into the next level.
+                    This is in contrast to the MergeSort.
+                </p>
+                <button onclick="quickSortLaunch()">Run Quick Sort</button>
+            </div>
+            <div class="algorithm_summary">
+                <h4>Merge Sort</h4>
+                <p>
+                    This is a "divide and conquer" algorithm. Conceptually, it groups the array elements into pairs, then pairs of those pairs (of sub-arrays),
+                     and so on until it ends up with
+                    a single pair of nested pairs. For example, if there are 10 elements in the array, the nested pairing structure will be 
+                    (((1,2),(3,4)),((5,6),(7,8)),(9,10)). Note how, if the number of elements is not an exact power of 2 (2,4,8,16,etc...), the second member of the last pair at each
+                    level might not be complete. This implementation also uses recursion, but in contrast to QuickSort, the processing is
+                    performed at the deepest level first before it returns up the call stack. At the lowest level (which is the level where it is a simple pair of two elements),
+                    the algorithm sorts them trivially by swapping them if they are not in the correct order. At every level above
+                    the lowest level, the algorithm now needs to "merge" pairs of sub-arrays of more than one element. Each sub-array will already be sorted
+                    because this was done by the level below, so the merge only needs to combine them into a single sorted array. It does this by 
+                    comparing the head of the two sub-arrays and pulling the smaller element into the result array. In the animation, you can see
+                    how merge begins with a left-array and a right-array, and then the sorted-array grows by taking head elements from the left/right-array which
+                    are gradually emptied.
+                </p>
+                <button onclick="mergeSortLaunch()">Run Merge Sort</button>
+            </div>
+        </div>
+        <div>
+            <h2>Some things to look into more deeply</h2>
+            <ol>
+                <li>If you were developing a page to search for some items and display the results in sorted order, but there are many items
+                    returned from the search and you only want to display the first page of them, would you choose Selection Sort or Insertion Sort?
+                </li>
+                <li>Can you modify the code so that it reports the number of 
+                    <ul>
+                        <li>compares</li>
+                        <li>writes into a variable (a swap requires 3, including the tmp variable, a rotation requires N+1)</li>
+                    </ul>
+                    What is the difference between the groups (InsertionSort, SelectionSort, BubbleSort) and (QuickSort, MergeSort)?
+                    Do some research on "Time-Complexity of Sorting Algorithms"
+                </li>
+                <li>
+                    How do you think these algorithms would behave differently if a linked list was used instead of an array?
+                    Do some research on "linked lists".
+                </li>
+            </ol>
         </div>
         <script>
             /**
@@ -121,16 +232,16 @@
             async function selectionSort() {
                 await prepareSort();
 
-                let pointerJ = displayPointer("pointer_j.png",4,0);
-                let pointerI = displayPointer("pointer_i.png",2,0);
+                let pointerJ = displayPointer("pointer_j.png",2,0);
+                let pointerI = displayPointer("pointer_i.png",0,0);
 
                 showAlgorithmName("Selection sort");
                 showCommentary("Selection sort");
 
                 for (i = 0; i<datastore.length-1; i++) {
-                    animatePointer(pointerI, Math.max(i-1,0), i, 2);
+                    animatePointer(pointerI, Math.max(i-1,0), i, 0);
                     for (j = i+1; j<datastore.length; j++) {
-                        animatePointer(pointerJ, j-1, j, 4);
+                        animatePointer(pointerJ, j-1, j, 2);
 
                         if (datastore[i]>datastore[j]) {
                             doSwap(i,j);
@@ -144,16 +255,16 @@
             async function insertionSort() {
                 await prepareSort();
 
-                let pointerJ = displayPointer("pointer_j.png",4,0);
-                let pointerI = displayPointer("pointer_i.png",2,0);
+                let pointerJ = displayPointer("pointer_j.png",2,0);
+                let pointerI = displayPointer("pointer_i.png",0,0);
 
                 showAlgorithmName("Insertion sort");
                 showCommentary("Insertion sort");
 
                 for (i = 1; i<datastore.length; i++) {
-                    animatePointer(pointerI, i-1, i, 2);
+                    animatePointer(pointerI, i-1, i, 0);
                     for (j = 0; j<i; j++) {
-                        animatePointer(pointerJ, Math.max(0,j-1), j, 4);
+                        animatePointer(pointerJ, Math.max(0,j-1), j, 2);
 
                         if (datastore[i]<datastore[j]) {
                             let target = datastore[i];
@@ -172,16 +283,16 @@
 
                 await prepareSort();
 
-                let pointerJ = displayPointer("pointer_j.png",4,0);
-                let pointerI = displayPointer("pointer_i.png",2,0);
+                let pointerJ = displayPointer("pointer_j.png",2,0);
+                let pointerI = displayPointer("pointer_i.png",0,0);
 
                 showAlgorithmName("Bubble sort");
                 showCommentary("Bubble sort");
 
                 for (let i = datastore.length-1; i>0; i--) {
-                    animatePointer(pointerI, i+1, i, 2);
+                    animatePointer(pointerI, i+1, i, 0);
                     for (let j = 0; j<i; j++) {
-                        animatePointer(pointerJ, Math.max(j-1,0), j, 4);
+                        animatePointer(pointerJ, Math.max(j-1,0), j, 2);
                         if (datastore[j]>datastore[j+1]) {
                             let left = datastore[j];
                             let right = datastore[j+1];
@@ -288,7 +399,7 @@
 
                 mergeSort(start, divider);
                 mergeSort(start + divider, length-divider);
-                animationBuffer.push(()=>showCommentary(`sorting range: ${start} to ${start + length}`));
+                animationBuffer.push(()=>showCommentary(`merging range: ${start} to ${start + length}`));
                 let i = start;
                 let j = start + divider;
                 // console.log(`segment ${i},${j},${start + length} `)
