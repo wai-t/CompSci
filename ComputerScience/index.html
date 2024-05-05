@@ -21,8 +21,6 @@
                 padding-bottom: 50px;
             }
             #array {
-                /* display: flex;
-                flex-direction: row; */
                 width: auto;
                 min-width: 500px;
                 height: 150px;
@@ -35,12 +33,8 @@
                 display: flex;
                 height: 50px;
                 width: 50px;
-                /* margin: 50px; */
                 align-items: center;
                 justify-content: center;
-                /* border-color:yellow;
-                border-style: solid;
-                border-width: 2px; */
                 border-radius: 10px;
                 background-color: black;
                 color: yellow;
@@ -51,13 +45,11 @@
                 height: 20px;
                 width: 50px;
                 top: 30px;
-                /* margin: 50px; */
                 align-items: center;
                 justify-content: center;
                 border-color:black;
                 border-style: solid;
                 border-width: 2px;
-                /* border-radius: 10px; */
                 background-color: black;
                 color: grey;
                 position: absolute;
@@ -78,12 +70,8 @@
                 display: flex;
                 height: 50px;
                 width: 50px;
-                /* margin: 50px; */
                 align-items: center;
                 justify-content: center;
-                /* border-color:yellow;
-                border-style: solid;
-                border-width: 2px; */
                 border-radius: 10px;
                 background-color: lightblue;
                 color: black;
@@ -113,7 +101,7 @@
             <p id = "commentary">What's happening?</p>
             <div>
                 <button onClick="randomise()">Randomise</button>
-                <button onclick="reset()">Reset</button>
+                <button onclick="reset()">Reset to Unsorted</button>
                 <button onclick="cancelAnimation()">cancel</button>
             </div>
 
@@ -130,6 +118,7 @@
                     left of <strong>I</strong> are already sorted and are guaranteed to be the lowest in the array.
                 </p>
                 <button onclick="selectionSort()">Run Selection Sort</button>
+                <button onclick="reset()">Reset to Unsorted</button>
             </div>
             <div class="algorithm_summary">
                 <h4>Insertion Sort</h4>
@@ -143,6 +132,7 @@
                     but crucially they may not be the lowest in the whole array.
                 </p>
                 <button onclick="insertionSort()">Run Insertion Sort</button>
+                <button onclick="reset()">Reset to Unsorted</button>
             </div>
             <div class="algorithm_summary">
                 <h4>Bubble Sort</h4>
@@ -158,6 +148,7 @@
                     the whole array.
                 </p>
                 <button onclick="bubbleSort()">Run Bubble Sort</button>
+                <button onclick="reset()">Reset to Unsorted</button>
             </div>
             <div class="algorithm_summary">
                 <h4>Quick Sort</h4>
@@ -179,6 +170,7 @@
                     This is in contrast to the MergeSort.
                 </p>
                 <button onclick="quickSortLaunch()">Run Quick Sort</button>
+                <button onclick="reset()">Reset to Unsorted</button>
             </div>
             <div class="algorithm_summary">
                 <h4>Merge Sort</h4>
@@ -197,25 +189,33 @@
                     are gradually emptied.
                 </p>
                 <button onclick="mergeSortLaunch()">Run Merge Sort</button>
+                <button onclick="reset()">Reset to Unsorted</button>
             </div>
         </div>
         <div>
             <h2>Some things to look into more deeply</h2>
             <ol>
-                <li>If you were developing a page to search for some items and display the results in sorted order, but there are many items
-                    returned from the search and you only want to display the first page of them, would you choose Selection Sort or Insertion Sort?
+                <li>
+                    <p>Notice how if you run each sort a second time on the already sorted data (without pressing the "Reset to Unsorted" button) nothing moves. This shows that
+                    the algorithms don't do any unnecessary shifting of data. However, they still look at every piece of data
+                    many times over. By studying the code can you see if this can be optimised?</p>
                 </li>
-                <li>Can you modify the code so that it reports the number of 
+                <li>
+                    <p>If you were developing a page to search for some items and display the results in sorted order, but there are many items
+                    returned from the search and you only want to display the first page of them, would you choose Selection Sort or Insertion Sort?</p>
+                </li>
+                <li><p>Can you modify the code so that it reports the number of 
                     <ul>
-                        <li>compares</li>
+                        <li>compares of two array elements</li>
                         <li>writes into a variable (a swap requires 3, including the tmp variable, a rotation requires N+1)</li>
                     </ul>
                     What is the difference between the groups (InsertionSort, SelectionSort, BubbleSort) and (QuickSort, MergeSort)?
-                    Do some research on "Time-Complexity of Sorting Algorithms"
+                    Do some research on "Time-Complexity of Sorting Algorithms". Find out what it means when we say the first group of
+                    algorithms is O(N<sup>2</sup>) while the second group is O(NlogN).</p>
                 </li>
                 <li>
-                    How do you think these algorithms would behave differently if a linked list was used instead of an array?
-                    Do some research on "linked lists".
+                    <p>How do you think these algorithms would behave differently if a linked list was used instead of an array?
+                    Do some research on "linked lists".</p>
                 </li>
             </ol>
         </div>
@@ -229,6 +229,12 @@
                         throw Error("result not sorted!");
                 }
             }
+
+            /**
+             * 
+             *  Selection Sort
+             * 
+             * */
             async function selectionSort() {
                 await prepareSort();
 
@@ -243,6 +249,8 @@
                     for (j = i+1; j<datastore.length; j++) {
                         animatePointer(pointerJ, j-1, j, 2);
 
+                        // If we find any element to the right of i that is smaller
+                        // then swap them
                         if (datastore[i]>datastore[j]) {
                             doSwap(i,j);
                         }
@@ -252,6 +260,12 @@
                 playAnimation();
             }
 
+
+            /**
+             * 
+             *  Insertion Sort
+             * 
+             * */
             async function insertionSort() {
                 await prepareSort();
 
@@ -266,11 +280,11 @@
                     for (j = 0; j<i; j++) {
                         animatePointer(pointerJ, Math.max(0,j-1), j, 2);
 
+                        // find the first place to the left of i to place the current element
                         if (datastore[i]<datastore[j]) {
-                            let target = datastore[i];
-                            animationBuffer.push(()=>showCommentary(`Inserting ${target} at position J`));
-                            // doSwap(i,j);
+                            animateOperation(showCommentary, `Inserting ${datastore[i]} at position J`);
                             doRotate(j,i);
+
                             break;
                         }
                     }
@@ -279,8 +293,13 @@
                 playAnimation();
             }
 
-            async function bubbleSort() {
 
+            /**
+             * 
+             *  Bubble Sort
+             * 
+             * */
+            async function bubbleSort() {
                 await prepareSort();
 
                 let pointerJ = displayPointer("pointer_j.png",2,0);
@@ -293,10 +312,10 @@
                     animatePointer(pointerI, i+1, i, 0);
                     for (let j = 0; j<i; j++) {
                         animatePointer(pointerJ, Math.max(j-1,0), j, 2);
+
+                        // swap if the adjacent pair is out of order
                         if (datastore[j]>datastore[j+1]) {
-                            let left = datastore[j];
-                            let right = datastore[j+1];
-                            animationBuffer.push(()=>showCommentary(`${left}>${right}, so swapping`));
+                            animateOperation(showCommentary, `${ datastore[j]}>${datastore[j+1]}, so swapping`);
                             doSwap(j,j+1);
                         }
                     }
@@ -305,11 +324,17 @@
                 playAnimation();
             }
 
+
+            /**
+             * 
+             *  QuickSort
+             * 
+             * */
             async function quickSortLaunch() {
                 await prepareSort();
 
-                pivotNo = 0;
                 showAlgorithmName("Quick sort");
+                showCommentary("Quick sort");
                 
                 quickSort(0, datastore.length);
                 
@@ -317,60 +342,42 @@
             }
             async function quickSort(start, length) {
                 if (length==1) {
-                    let pivot = pivotElement(start);
-                    animationBuffer.push(()=>placePivotElement(pivot, start))
-                    let pNo = pivotNo;
-                    animationBuffer.push(() => showCommentary(`pivot fixed at P${pNo}`));
+                    animateOperation(placePivotElement, pivotElement(start), start);
+                    animateOperation(showCommentary, `pivot fixed at P${pivotNo}`);
                     return;
                 }
-                // if (length==2) {
-                //     animationBuffer.push(()=>placePivotElement(null, start + 1));
-                //     if (datastore[start] >datastore[start + 1]) {
-                //         // let tmp = datastore[start];
-                //         // datastore[start] = datastore[currentPivot];
-                //         // datastore[currentPivot] = tmp;
-                //         doRotate(start + 1, start);
-                //     }
-                //     animationBuffer.push(()=>placePivotElement(null, start));
-                //     return;
-                // }
+                // choose the pivot to be the last element in the sub-array
                 let currentPivot = start + length - 1;
                 let pivot = pivotElement(currentPivot);
-                // animationBuffer.push(() => placePivotElement(pivot, currentPivot));
-                {
-                    let p = currentPivot;
-                    animationBuffer.push(() => placePivotElement(pivot, p));
-                }
-                for (let i = start; i<currentPivot; i++) {
+                animateOperation(placePivotElement, pivot, currentPivot);
+                for (let i = currentPivot-1; i>=0; i--) {
+                    // move every element to the left of the pivot that is larger to the right of the pivot
+                    // and shift everything in between (including the pivot) to the left to make room for it
                     if (datastore[i] > datastore[currentPivot]) {
-                        // let tmp = datastore[i];
-                        // for (let j = i; j<currentPivot; j++) {
-                        //     datastore[j] = datastore[j+1];
-                        // }
-                        // datastore[currentPivot] = tmp;
-                        {
-                            let target = datastore[i];
-                            let testValue = datastore[currentPivot];
-                            let pNo = pivotNo;
-                            animationBuffer.push(() => showCommentary(`Moving ${target} to right of ${testValue} at pivot ${pNo}`));
-                            let p = currentPivot-1;
-                            animationBuffer.push(() => placePivotElement(pivot, p));
-                        }
+                        animateOperation(showCommentary, `Moving ${datastore[i]} to right of ${datastore[currentPivot]} at pivot ${pivotNo}`);
                         doRotate(currentPivot, i);
-                        i--;
+                        animateOperation(placePivotElement, pivot, currentPivot-1);
                         currentPivot--;
-                        // animationBuffer.push(() => placePivotElement(pivot, currentPivot));
-
                     }
                 }
+                // recursive calls: call quickSort on the (non-empty) sub-arrays to the left and right of the pivot
                 if (currentPivot>start) quickSort(start,currentPivot - start);
                 if (currentPivot<start + length-1) quickSort(currentPivot+1, start + length -1 - currentPivot);
             }
 
+
+            
+            /**
+             * 
+             *  MergeSort
+             * 
+             * */
             async function mergeSortLaunch() {
                 await prepareSort();
 
                 showAlgorithmName("Merge Sort");
+                showCommentary("Merge Sort");
+
                 mergeSort(0, datastore.length);
                 
                 playAnimation();
@@ -379,51 +386,46 @@
                 if (length<=1)
                     return;
                 else if (length==2) {
-                    animationBuffer.push(()=>showCommentary(`sorting range ${start} to ${start + length}`));
-                    animationBuffer.push(()=>showMergeRange(start, 0, 1, 2));
+                    animateOperation(showCommentary, `sorting range ${start} to ${start + length}`);
+                    animateOperation(showMergeRange, start, 0, 1, 2)
                     if (datastore[start]>datastore[start+1]) {
-                        // let tmp = datastore[start];
-                        // datastore[start] = datastore[start+1];
-                        // datastore[start+1] = tmp;
                         doRotate(start+1, start);
                     }
                     return;
                 }
-                let depth = 0;
-                let l = length-1;
-                while (l>0) {
-                    depth++;
-                    l>>=1;
-                }
-                let divider = 2**(depth-1);
 
+                // determine position of divider to split array into two sub-arrays
+                let divider = 1;
+                do {
+                    divider *= 2;
+                } while (divider < length/2);
+
+                // recursive calls to merge sort for the two sub-arrays
                 mergeSort(start, divider);
                 mergeSort(start + divider, length-divider);
-                animationBuffer.push(()=>showCommentary(`merging range: ${start} to ${start + length}`));
+                // sub-arrays should now be individually sorted
+
+                animateOperation(showCommentary, `merging range: ${start} to ${start + length}`);
+
                 let i = start;
                 let j = start + divider;
-                // console.log(`segment ${i},${j},${start + length} `)
-                animationBuffer.push(()=>showMergeRange(start, 0, divider, length));
+                animateOperation(showMergeRange, start, 0, divider, length);
                 while (i<j && j<start + length) {
+                    // if the right sub-array has the next lower value, then place it before
+                    // the left sub-array (at the end of the sorted elements), and shift everything
+                    // in between to the right to make room for it.
                     if (datastore[i]>datastore[j]) {
-                        // let tmp = datastore[j];
-                        // for (let k=j; k>i; k--) {
-                        //     datastore[k] = datastore[k-1];
-                        // }
-                        // datastore[i] = tmp;
                         doRotate(i,j);
                         j++;
                     }
                     i++;
-                    {
-                        let sorted = i - start;
-                        let divider = j - start;
-                        animationBuffer.push(()=>showMergeRange(start,sorted, divider, length));
-                    }
+                    animateOperation(showMergeRange, start, i - start, j - start, length);
                 }
-                animationBuffer.push(()=>showMergeRange(start, length, length, length));
+                animateOperation(showMergeRange, start, length, length, length);
+
             }
-     reset();
+
+        reset();
 
         </script>
     </body>
