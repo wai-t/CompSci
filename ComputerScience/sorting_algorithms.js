@@ -128,7 +128,7 @@ async function quickSort(start, length) {
     let currentPivot = start + length - 1;
     let pivot = pivotElement(currentPivot);
     animateOperation(placePivotElement, pivot, currentPivot);
-    for (let i = currentPivot-1; i>=0; i--) {
+    for (let i = currentPivot-1; i>=start; i--) {
         // move every element to the left of the pivot that is larger to the right of the pivot
         // and shift everything in between (including the pivot) to the left to make room for it
         if (datastore[i] > datastore[currentPivot]) {
