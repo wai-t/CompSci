@@ -1,8 +1,8 @@
 # Computer Science
 Contains the code for a demo of sorting algorithms
 
-The algorithms implemented are SelectionSort, InsertionSort, BubbleSort, and MergeSort and the code is in sorting_algorithms.js
-The sorting code implementation uses no advanced JavaScript constructs, except BubbleSort and MergeSort demonstrate the use
+The algorithms implemented are SelectionSort, InsertionSort, BubbleSort, QuickSort and MergeSort and the code is in sorting_algorithms.js
+The sorting code implementation uses no advanced JavaScript constructs, except QuickSort and MergeSort demonstrate the use
 of recursion in two different ways - namely: process current level before recursive call, and process current level after return
 from recursive call, respectively.
 
