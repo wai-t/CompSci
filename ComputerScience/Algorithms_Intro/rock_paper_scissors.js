@@ -11,6 +11,9 @@
 // To support possible strategies we might want to try, the array robo_plays[]
 // maintains all the plays that robo has played up to the last game. Obviously
 // it can't contain information about future games.
+//
+// To run the games, you can use a Terminal and type:
+//   node rock_paper_scissors.js
 // 
 const NUM_GAMES = 1000;
 
