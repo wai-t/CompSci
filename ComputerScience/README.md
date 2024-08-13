@@ -6,5 +6,5 @@ In the Summer of 2024, the content maintained in this repo was delivered as a se
 Workshops delivered so far:</br>
     Algorithms General Introduction, 20 Jul 2024 [pptx](./Algorithms_Intro/Algorithms_Intro.pptx) | [folder](./Algorithms_Intro/)<br>
     Sorting Algorithms - In Depth, 27 Jul 2024 [pptx](./Sorting/Sorting_Algorithms.pptx) | [folder](./Sorting/)</br>
-
+    Data Structures - Introduction, 10 Aug 2024 [pptx](./Data_structures/Data%20Structures.pptx) | [folder](./Data_structures/)</br>
 
