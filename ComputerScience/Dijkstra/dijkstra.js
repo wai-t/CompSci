@@ -24,29 +24,24 @@ class Node {
         this.dist = Infinity;
         this.prev = null;
         this.node_state = NodeState.UNVISITED;
-        this.visited = false;
-        this.blocked = false;
-        this.destination = false;
     }
     get_unvisited_neighbours() {
         let ret = [];
-        if (this.x > 0 && !nodes[this.x - 1][this.y].visited && !nodes[this.x - 1][this.y].blocked) ret.push([nodes[this.x - 1][this.y], orth]);
-        if (this.x < MAX_X - 1 && !nodes[this.x + 1][this.y].visited && !nodes[this.x + 1][this.y].blocked) ret.push([nodes[this.x + 1][this.y], orth]);
-        if (this.y > 0 && !nodes[this.x][this.y - 1].visited && !nodes[this.x][this.y - 1].blocked) ret.push([nodes[this.x][this.y - 1], orth]);
-        if (this.y < MAX_Y - 1 && !nodes[this.x][this.y + 1].visited && !nodes[this.x][this.y + 1].blocked) ret.push([nodes[this.x][this.y + 1], orth]);
+        if (this.x > 0 && this.is_reachable(nodes[this.x - 1][this.y])) ret.push([nodes[this.x - 1][this.y], orth]);
+        if (this.x < MAX_X - 1 && this.is_reachable(nodes[this.x + 1][this.y])) ret.push([nodes[this.x + 1][this.y], orth]);
+        if (this.y > 0 && this.is_reachable(nodes[this.x][this.y - 1])) ret.push([nodes[this.x][this.y - 1], orth]);
+        if (this.y < MAX_Y - 1 && this.is_reachable(nodes[this.x][this.y + 1])) ret.push([nodes[this.x][this.y + 1], orth]);
 
-        if (this.x > 0 && this.y > 0 && !nodes[this.x - 1][this.y - 1].visited && !nodes[this.x - 1][this.y - 1].blocked) ret.push([nodes[this.x - 1][this.y - 1], dia]);
-        if (this.x > 0 && this.y < MAX_Y - 1 && !nodes[this.x - 1][this.y + 1].visited && !nodes[this.x - 1][this.y + 1].blocked) ret.push([nodes[this.x - 1][this.y + 1], dia]);
-        if (this.x < MAX_X - 1 && this.y > 0 && !nodes[this.x + 1][this.y - 1].visited && !nodes[this.x + 1][this.y - 1].blocked) ret.push([nodes[this.x + 1][this.y - 1], dia]);
-        if (this.x < MAX_X - 1 && this.y < MAX_Y - 1 && !nodes[this.x + 1][this.y + 1].visited && !nodes[this.x + 1][this.y + 1].blocked) ret.push([nodes[this.x + 1][this.y + 1], dia]);
+        if (this.x > 0 && this.y > 0 && this.is_reachable(nodes[this.x - 1][this.y - 1])) ret.push([nodes[this.x - 1][this.y - 1], dia]);
+        if (this.x > 0 && this.y < MAX_Y - 1 && this.is_reachable(nodes[this.x - 1][this.y + 1])) ret.push([nodes[this.x - 1][this.y + 1], dia]);
+        if (this.x < MAX_X - 1 && this.y > 0 && this.is_reachable(nodes[this.x + 1][this.y - 1])) ret.push([nodes[this.x + 1][this.y - 1], dia]);
+        if (this.x < MAX_X - 1 && this.y < MAX_Y - 1 && this.is_reachable(nodes[this.x + 1][this.y + 1])) ret.push([nodes[this.x + 1][this.y + 1], dia]);
 
         return ret;
     }
-}
-
-
-function click() {
-    console.log("click");
+    is_reachable(node) {
+        return node.node_state == NodeState.UNVISITED || node.node_state == NodeState.DESTINATION;
+    }
 }
 
 function mouse_move(e) {
@@ -54,12 +49,16 @@ function mouse_move(e) {
     let x = Math.floor(e.offsetX / CELL_SIZE);
     let y = Math.floor(e.offsetY / CELL_SIZE);
     let node = nodes[x][y];
+    if (node.node_state==NodeState.VISITED || node.node_state==NodeState.DESTINATION)
+        return;
     if (e.buttons == 1) {
         if (e.shiftKey) {
-            node.blocked = false;
+            if (node.node_state == NodeState.BLOCKED)
+                node.node_state = NodeState.UNVISITED;
         }
         else {
-            node.blocked = true;
+            if (node.node_state == NodeState.UNVISITED)
+                node.node_state = NodeState.BLOCKED;
         }
         draw_cells();
     }
@@ -71,14 +70,18 @@ function mouse_click(e) {
     let y = Math.floor(e.offsetY / CELL_SIZE);
     let node = nodes[x][y];
     if (e.shiftKey) {
-        node.blocked = false;
+        if (node.node_state == NodeState.BLOCKED)
+            node.node_state = NodeState.UNVISITED;
     }
-    else if (e.ctrlKey) {
-        nodes.forEach((row) => { row.forEach((cell) => { cell.destination = false; }) });
-        node.destination = true;
+    else if (e.ctrlKey && (node.node_state == NodeState.UNVISITED || node.node_state == NodeState.VISITED )) {
+        nodes.forEach((row) => { row.forEach((cell) => { if (cell.node_state == NodeState.DESTINATION) cell.node_state=NodeState.UNVISITED; }) });
+        node.node_state = NodeState.DESTINATION;
+        reset_unvisited();
+        draw_cells()
     }
     else {
-        node.blocked = true;
+        if (node.node_state == NodeState.UNVISITED)
+            node.node_state = NodeState.BLOCKED;
     }
     draw_cells();
 }
@@ -131,16 +134,15 @@ function draw_cells() {
 
     const cell_ctx = cell.getContext("2d");
 
-    // blocked cells
     nodes.forEach((n) => {
         n.forEach((n) => {
-            if (n.destination) {
+            if (n.node_state == NodeState.DESTINATION) {
                 cell_ctx.fillStyle = "yellow";
             }
-            else if (n.blocked) {
+            else if (n.node_state == NodeState.BLOCKED) {
                 cell_ctx.fillStyle = "black";
             }
-            else if (n.visited) {
+            else if (n.node_state == NodeState.VISITED) {
                 cell_ctx.fillStyle = "green";
             }
             else {
@@ -154,17 +156,20 @@ function draw_cells() {
 }
 
 function run() {
-    dijkstra(current);
+    solve_path(current);
 }
 
 function reset_route() {
 
-    nodes.forEach((row) => { row.forEach((cell) => { cell.dist = Infinity; cell.visited = false/*; cell.destination = false;*/ }) });
+    nodes.forEach((row) => { row.forEach((cell) => { 
+        cell.dist = Infinity; 
+        if (cell.node_state == NodeState.VISITED)
+            cell.node_state = NodeState.UNVISITED;
+    }) });
     nodes[0][0].dist = 0;
-    nodes[0][0].visited = true;
+    nodes[0][0].node_state = NodeState.VISITED;
 
-
-    nodes.forEach((row) => { row.filter((node) => !node.visited && !node.blocked).forEach((node) => unvisited.push(node)) });
+    reset_unvisited();
 
     current = nodes[0][0];
     draw_cells();
@@ -172,11 +177,32 @@ function reset_route() {
 
 }
 
+function reset_unvisited() {
+    nodes.forEach((row) => { 
+        row.filter((node) => node.node_state==NodeState.UNVISITED || node.node_state==NodeState.DESTINATION)
+        .forEach((node) => unvisited.push(node)) 
+    });
+}
+
 function reset_map() {
-    nodes.forEach((row) => { row.forEach((cell) => { cell.dist = Infinity; cell.blocked = false; cell.visited = false }) });
+    nodes.forEach((row) => { row.forEach((cell) => { 
+        cell.dist = Infinity; cell.node_state = NodeState.UNVISITED}) }
+    );
+    nodes[MAX_X-1][MAX_Y-1].node_state = NodeState.DESTINATION;
     reset_route();
 }
 
+function solve_path(current) {
+    if (current) {
+        current = dijkstra(current);
+        if (current && current.dist < Infinity) {
+            draw_cells();
+            draw_current_shortest_route(current);
+            if (current.node_state != NodeState.DESTINATION)
+                window.requestAnimationFrame(() => solve_path(current));
+        }
+    }
+}
 //
 // One iteration of Dijkstra's algorithm
 // 
@@ -190,25 +216,18 @@ function reset_map() {
 // selected for the next iteration.
 //
 function dijkstra(current) {
-    if (current) {
-        current.visited = true;
-        let neighbours = current.get_unvisited_neighbours();
-        neighbours.forEach((n) => {
-            if (n[0].dist >= current.dist + n[1]) {
-                n[0].dist = current.dist + n[1];
-                n[0].prev = current;
-            }
-        });
-        unvisited.sort((a, b) => a.dist - b.dist);
-        console.log("num unvisited=" + unvisited.length + "current=" + current.x + ", " + current.y + ", " + current.dist + ", " + current.prev?.x + ", " + current.prev?.y);
-        current = unvisited.shift();
-        if (current && current.dist < Infinity) {
-            draw_cells();
-            draw_current_shortest_route(current);
-            if (!current.destination)
-                window.requestAnimationFrame(() => dijkstra(current));
+    current.node_state = NodeState.VISITED;
+    let neighbours = current.get_unvisited_neighbours();
+    neighbours.forEach((n) => {
+        if (n[0].dist >= current.dist + n[1]) {
+            n[0].dist = current.dist + n[1];
+            n[0].prev = current;
         }
-    }
+    });
+    unvisited.sort((a, b) => a.dist - b.dist);
+    console.log("num unvisited=" + unvisited.length + "current=" + current.x + ", " + current.y + ", " + current.dist + ", " + current.prev?.x + ", " + current.prev?.y);
+    current = unvisited.shift();
+    return current;
 }
 
 for (let x = 0; x < MAX_X; x++) {
@@ -217,7 +236,7 @@ for (let x = 0; x < MAX_X; x++) {
         nodes[x].push(new Node(x, y));
     }
 }
-nodes[MAX_X-1][MAX_Y-1].destination = true;
+nodes[MAX_X-1][MAX_Y-1].node_state = NodeState.DESTINATION;
 
 
 const unvisited = [];
