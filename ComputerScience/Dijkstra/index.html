@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            #route {
+                z-index: 3;
+                position: absolute;
+            }
+            #cells {
+                z-index: 2;
+                position: absolute;
+        
+            }
+            #map {
+                z-index: 0;
+                position: absolute;
+                background-color: grey;
+        
+            }
+        </style>
+    </head>
+    <body>
+        <button onclick="run()">Run</button>
+        <button onclick="reset_route()">Reset Route</button>
+        <button onclick="reset_map()">Reset Map</button>
+        <div>
+            <canvas id="route" width="500" height="500"></canvas>
+            <canvas id="cells" width="500" height="500"></canvas>
+            <canvas id="map" width="500" height="500"></canvas>
+        </div>
+        <script src="./dijkstra.js"/>
+        <script>
+            draw_cells();
+            reset_route();
+            reset_map();
+        </script>
+    </body>
+    
+</html>
