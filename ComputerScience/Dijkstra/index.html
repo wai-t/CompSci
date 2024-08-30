@@ -20,9 +20,28 @@
         </style>
     </head>
     <body>
-        <button onclick="run()">Run</button>
-        <button onclick="reset_route()">Reset Route</button>
-        <button onclick="reset_map()">Reset Map</button>
+        <h1>Dijkstra's Route Finding Algorithm</h1>
+        <div>
+            <h2>Instructions</h2>
+            The route always starts at the top left square.</p>
+            Click on a square to mark it as blocked so that the route finding cannot travel through it. You have to block the
+            diagonal squares to block the route completely.</p>
+            Shift-Click to unblock a square.</p>
+            Ctrl-Click on a square to mark it as the destination.</p>
+            <table>
+                <thead>
+                    <th span="2">Key</th>
+                </thead>
+                <tbody>
+                    <tr><td><image src="./destination.png"/></td><td>destination</td></tr>
+                    <tr><td><image src="./blocked.png"/></td><td>blocked</td></tr>
+                    <tr><td><image src="./visited.png"/></td><td>visited</td></tr>
+                </tbody>
+            </table>
+            <button onclick="run()">Run</button>
+            <button onclick="reset_route()">Reset Route</button>
+            <button onclick="reset_map()">Reset Map</button>
+        </div>
         <div>
             <canvas id="route" width="500" height="500"></canvas>
             <canvas id="cells" width="500" height="500"></canvas>
